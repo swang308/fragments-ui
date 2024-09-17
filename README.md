@@ -14,16 +14,16 @@
 ## Structure and Route Information
 ```bash
 fragements/
-├── .parcel-cache/
+├── .parcel-cache/  
 ├── dist/
 ├── node_modules/
 ├── src/
-│   ├── api.js      # Server entry point
-│   ├── app.js         # Express app configuration
-│   ├── auth.js      # Logger utility
-│   ├── index.html      # Logger utility
-│   ├── style.css      # Logger utility
-├── .env         # Ignore unnecessary files for git
+│   ├── api.js         # Get a user's fragments from the fragments microservice
+│   ├── app.js         # Run web app
+│   ├── auth.js        # Do the OAuth2 Authorization Code Grant
+│   ├── index.html     # Web Page
+│   ├── style.css      # Web Page style
+├── .env               # Stroe credentails
 ├── .gitignore         # Ignore unnecessary files for git
 ├── .prettierignore    # Ignore unnecessary files for prettier
 ├── package-lock.json  # Package version lock file
@@ -35,7 +35,7 @@ fragements/
 Confirm version is up-to-date
 - [Parcel](https://parceljs.org/getting-started/webapp/)
 - [aws-amplify](https://www.npmjs.com/package/aws-amplify)
-- 
+
 ### Installing
 #### Github repo
 1. Create 
@@ -350,10 +350,9 @@ git commit -m "Write_what_is_change"
 - Student ID: 133159228
 
 ## Version History
-- 2024-09-09 v01
+- 2024-09-16 v01
   * version 01 initial
 
 ## Acknowledgement
 - [DiscussionBorad](https://github.com/humphd/cloud-computing-for-programmers-fall-2024/discussions)
 - [OAuth2 Authorization Code Grant](https://developer.okta.com/blog/2018/04/10/oauth-authorization-code-grant-type)
-- 
