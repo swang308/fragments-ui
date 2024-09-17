@@ -1,4 +1,5 @@
 // src/api.js
+//define a function to get a user's fragments from the fragments microservice:
 
 // fragments microservice API to use, defaults to localhost:8080 if not set in env
 const apiUrl = process.env.API_URL || 'http://localhost:8080';
