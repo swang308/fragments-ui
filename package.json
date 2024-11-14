@@ -1,6 +1,6 @@
 {
   "name": "fragments-ui",
-  "version": "0.0.1",
+  "version": "0.7.1",
   "description": "Fragments UI testing web app",
   "scripts": {
     "start": "parcel src/index.html",
