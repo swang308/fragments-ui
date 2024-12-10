@@ -1,179 +1,214 @@
 // src/api.js
 
-// Set the API URL, defaulting to localhost:8080 if not set in the environment
+// Determine the API URL from environment variables or default to localhost
 const apiUrl = process.env.API_URL || 'http://localhost:8080';
 
 /**
- * Helper function to handle errors and log messages consistently.
- * @param {Response} res - The fetch response object
- * @param {string} operation - Description of the API operation being performed
- */
-function handleError(res, operation) {
-  console.error(`Error during ${operation}: ${res.status} ${res.statusText}`);
-  throw new Error(`${res.status} ${res.statusText}`);
-}
-
-/**
- * Fetches all fragments for the authenticated user.
- * @param {Object} user - Authenticated user object with authorization headers
+ * Fetch all fragments for the authenticated user.
+ * @param {Object} user - Authenticated user with an `idToken`.
  */
 export async function getUserFragments(user) {
-  console.log('Fetching user fragments...');
+  console.log('Requesting user fragments data...');
   try {
-    const res = await fetch(`${apiUrl}/v1/fragments`, { headers: user.authorizationHeaders() });
-    if (!res.ok) handleError(res, 'fetching user fragments');
-    
+    const res = await fetch(`${apiUrl}/v1/fragments`, {
+      headers: user.authorizationHeaders(),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Error: ${res.status} ${res.statusText}`);
+    }
+
     const data = await res.json();
-    console.log('Successfully fetched user fragments:', data);
+    console.log('Successfully retrieved user fragments', { data });
     return data;
-  } catch (error) {
-    console.error('Unable to fetch user fragments:', error);
-    throw error;
+  } catch (err) {
+    console.error('Failed to fetch user fragments', { err });
+    throw err;
   }
 }
 
 /**
- * Fetches expanded fragments for the authenticated user.
- * @param {Object} user - Authenticated user object
- * @param {number} expand - Parameter to expand fragment details
+ * Fetch fragments with the option to expand data.
+ * @param {Object} user - Authenticated user.
+ * @param {boolean} expand - Whether to expand the fragments data.
  */
 export async function getExpandedUserFragments(user, expand) {
-  console.log('Fetching expanded user fragments...');
+  console.log('Requesting expanded user fragments data...');
   try {
-    const res = await fetch(`${apiUrl}/v1/fragments?expand=${expand}`, { headers: user.authorizationHeaders() });
-    if (!res.ok) handleError(res, 'fetching expanded user fragments');
-    
+    const res = await fetch(`${apiUrl}/v1/fragments?expand=${expand}`, {
+      headers: user.authorizationHeaders(),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Error: ${res.status} ${res.statusText}`);
+    }
+
     const data = await res.json();
-    console.log('Successfully fetched expanded fragments:', data);
+    console.log('Successfully retrieved expanded user fragments', { data });
     return data;
-  } catch (error) {
-    console.error('Unable to fetch expanded fragments:', error);
-    throw error;
+  } catch (err) {
+    console.error('Failed to fetch expanded fragments', { err });
+    throw err;
   }
 }
 
 /**
- * Fetches a specific fragment by ID.
- * @param {Object} user - Authenticated user object
- * @param {string} fragmentId - ID of the fragment to fetch
+ * Fetch a specific fragment by its ID.
+ * @param {Object} user - Authenticated user.
+ * @param {string} fragmentId - ID of the fragment to fetch.
  */
-export async function getFragmentsById(user, fragmentId) {
-  console.log(`Fetching fragment with ID: ${fragmentId}`);
+export async function getFragmentWithId(user, fragmentId) {
+  console.log('Fetching fragment by ID...');
   try {
-    const res = await fetch(`${apiUrl}/v1/fragments/${fragmentId}`, { headers: user.authorizationHeaders() });
-    if (!res.ok) handleError(res, `fetching fragment with ID: ${fragmentId}`);
-    
+    const res = await fetch(`${apiUrl}/v1/fragments/${fragmentId}`, {
+      headers: {
+        Authorization: user.authorizationHeaders().Authorization,
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Error: ${res.status} ${res.statusText}`);
+    }
+
     const contentType = res.headers.get('content-type');
-    const data = contentType && contentType.includes('application/json') ? await res.json() : await res.text();
-    console.log(`Successfully fetched fragment with ID ${fragmentId}:`, data);
-    return data;
-  } catch (error) {
-    console.error(`Unable to fetch fragment with ID ${fragmentId}:`, error);
-    throw error;
+    return contentType?.includes('application/json')
+      ? await res.json()
+      : await res.text();
+  } catch (err) {
+    console.error('Failed to fetch fragment by ID', { err });
+    throw err;
   }
 }
 
 /**
- * Creates a new fragment with typed text content.
- * @param {Object} user - Authenticated user object
- * @param {string} fragmentText - Text content for the fragment
- * @param {string} fragType - MIME type of the fragment (e.g., 'text/plain')
+ * Post a typed fragment.
+ * @param {Object} user - Authenticated user.
+ * @param {string} fragmentText - Text of the fragment.
+ * @param {string} fragType - MIME type of the fragment.
  */
-export async function postUserTypedFragments(user, fragmentText, fragType) {
-  console.log('Posting new text fragment...');
+export async function postUserTypedFragment(user, fragmentText, fragType) {
+  console.log('Posting a typed fragment...');
   try {
     const res = await fetch(`${apiUrl}/v1/fragments`, {
       method: 'POST',
       headers: {
-        ...user.authorizationHeaders(),
+        Authorization: user.authorizationHeaders().Authorization,
         'Content-Type': fragType,
       },
       body: fragmentText,
     });
-    if (!res.ok) handleError(res, 'posting typed fragment');
-    
+
+    if (!res.ok) {
+      throw new Error(`Error: ${res.status} ${res.statusText}`);
+    }
+
+    // Extract the Location header
+    const location = res.headers.get('Location');
+    if (!location) {
+      console.warn('Location header is missing in the response.');
+    }
+
     const data = await res.json();
-    console.log("Successfully posted text fragment:", data);
-    return data;
-  } catch (error) {
-    console.error('Unable to post typed fragment:', error);
-    throw error;
+    console.log('Fragment posted successfully', { data });
+
+    // Return both the data and location
+    return { data, location };
+  } catch (err) {
+    console.error('Failed to post typed fragment', { err });
+    throw err;
   }
 }
 
 /**
- * Uploads a selected file as a fragment.
- * @param {Object} user - Authenticated user object
- * @param {File} selectedFile - File object to be uploaded
- * @param {string} fragType - MIME type of the file (e.g., 'image/png')
+ * Post a file fragment.
+ * @param {Object} user - Authenticated user.
+ * @param {File} selectedFile - File to upload.
+ * @param {string} fragType - MIME type of the file.
  */
-export async function postUserSelectedFragments(user, selectedFile, fragType) {
-  console.log('Uploading selected file as fragment...');
-  const formData = new FormData();
-  formData.append("file", selectedFile);
-  
+export async function postUserSelectedFragment(user, selectedFile, fragType) {
+  console.log('Posting a file fragment...');
   try {
     const res = await fetch(`${apiUrl}/v1/fragments`, {
       method: 'POST',
-      headers: user.authorizationHeaders(),
-      body: formData,
+      headers: {
+        Authorization: user.authorizationHeaders().Authorization,
+        'Content-Type': fragType,
+      },
+      body: selectedFile,
     });
-    if (!res.ok) handleError(res, 'posting file fragment');
-    
+
+    if (!res.ok) {
+      throw new Error(`Error: ${res.status} ${res.statusText}`);
+    }
+
+    // Extract the Location header
+    const location = res.headers.get('Location');
+    if (!location) {
+      console.warn('Location header is missing in the response.');
+    }
+
     const data = await res.json();
-    console.log("Successfully uploaded file fragment:", data);
-    return data;
-  } catch (error) {
-    console.error('Unable to post file fragment:', error);
-    throw error;
+    console.log('File fragment posted successfully', { data });
+
+    // Return both the data and location
+    return { data, location };
+  } catch (err) {
+    console.error('Failed to post file fragment', { err });
+    throw err;
   }
 }
 
 /**
- * Updates an existing fragment by ID.
- * @param {Object} user - Authenticated user object
- * @param {string} updatedText - Updated text content for the fragment
- * @param {string} updatedID - ID of the fragment to update
+ * Update an existing fragment.
+ * @param {Object} user - Authenticated user.
+ * @param {string} updatedText - Updated content of the fragment.
+ * @param {string} updatedID - ID of the fragment to update.
  */
-export async function putUserFragments(user, updatedText, updatedID) {
-  console.log(`Updating fragment with ID: ${updatedID}`);
+export async function putUserFragment(user, updatedText, updatedID) {
+  console.log('Updating fragment...');
   try {
     const res = await fetch(`${apiUrl}/v1/fragments/${updatedID}`, {
       method: 'PUT',
-      headers: user.authorizationHeaders(),
+      headers: {
+        Authorization: user.authorizationHeaders().Authorization,
+      },
       body: updatedText,
     });
-    if (!res.ok) handleError(res, `updating fragment with ID: ${updatedID}`);
-    
+
+    if (!res.ok) {
+      throw new Error(`Error: ${res.status} ${res.statusText}`);
+    }
+
     const contentType = res.headers.get('content-type');
-    const data = contentType && contentType.includes('application/json') ? await res.json() : await res.text();
-    console.log(`Successfully updated fragment with ID ${updatedID}:`, data);
-    return data;
-  } catch (error) {
-    console.error(`Unable to update fragment with ID ${updatedID}:`, error);
-    throw error;
+    return contentType?.includes('application/json')
+      ? await res.json()
+      : await res.text();
+  } catch (err) {
+    console.error('Failed to update fragment', { err });
+    throw err;
   }
 }
 
 /**
- * Deletes a fragment by ID.
- * @param {Object} user - Authenticated user object
- * @param {string} deleteFragId - ID of the fragment to delete
+ * Delete a fragment by ID.
+ * @param {Object} user - Authenticated user.
+ * @param {string} deleteFragId - ID of the fragment to delete.
  */
-export async function deleteUserFragments(user, deleteFragId) {
-  console.log(`Deleting fragment with ID: ${deleteFragId}`);
+export async function deleteUserFragment(user, deleteFragId) {
+  console.log('Deleting fragment...');
   try {
     const res = await fetch(`${apiUrl}/v1/fragments/${deleteFragId}`, {
       method: 'DELETE',
       headers: user.authorizationHeaders(),
     });
-    if (!res.ok) handleError(res, `deleting fragment with ID: ${deleteFragId}`);
-    
-    const data = await res.json();
-    console.log(`Successfully deleted fragment with ID ${deleteFragId}:`, data);
-    return data;
-  } catch (error) {
-    console.error(`Unable to delete fragment with ID ${deleteFragId}:`, error);
-    throw error;
+
+    if (!res.ok) {
+      throw new Error(`Error: ${res.status} ${res.statusText}`);
+    }
+
+    console.log('Fragment deleted successfully');
+  } catch (err) {
+    console.error('Failed to delete fragment', { err });
+    throw err;
   }
 }

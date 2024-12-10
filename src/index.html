@@ -3,101 +3,104 @@
   <head>
     <meta charset="utf-8" />
     <title>Fragments UI</title>
-    <!-- <link rel="stylesheet" href="styles.css"> -->
     <link rel="stylesheet" href="https://unpkg.com/bamboo.css" />
     <script type="module" src="./app.js"></script>
   </head>
   <body>
-    <section>
-      <h1>Fragments UI</h1>
-    </section>
-    <!-- Authentication Section -->
-    <section>
-      <div class="inline-flex">
-        <button id="login" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l">
-          Login
-        </button>
-        <button id="logout" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r">
-          Logout
-        </button>
-      </div>
-    </section>
+    <h1>Fragments UI</h1>
 
-    <!-- User Section (Visible only after login) -->
+    <!-- This section will only be available once the user has successfully logged in -->
     <section hidden id="user">
-      <h2>Welcome, <span class="username"></span>!</h2>
-    <!-- Post a New Fragment -->
-      <div>
-        <h3>POST</h3>
-        <label for="fragmentType">Fragment Type:</label>
-        <select name="fragmentType" id="fragmentType">
+      <h2>Hello <span class="username"></span>!</h2>
+
+      <!-- For current fragments -->
+      <h3>Current User Fragments</h3>
+      <p>
+        <button type="button" id="getFragments">GET fragments</button>
+        <button type="button" id="getExpandedFragments">GET fragments Meta-Data</button>
+        <pre id="currentFragment"></pre>
+      </p>
+
+      <h3>To view fragment data, enter the fragment id</h3>
+      <p>
+        <button type="button" id="getFragmentIdBtn">GET fragment's data</button>
+        <div>
+          <input type="text" class="form-control" id="fragmentId" placeholder="Type fragment id here">
+          <br /><br />
+          <pre id="currentFragmentWithId"></pre>
+        </div>
+      </p>
+      
+      <!-- For POST request -->
+      <h3>Post a fragment</h3>
+        <p>
+          <!-- For typing -->
+          <label for="fragmentInput">Write something below or choose from files to POST</label>
+          <input type="text" class="form-control" id="fragmentInput" placeholder="Type Something here">
+          <br /><br />
+          <label for="fragmentType">Choose The Correct Fragment Type</label>
+          <select name="fragmentType" id="fragmentType">
           <optgroup label="Text">
-            <option value="text/plain">Text (Plain)</option>
-            <option value="text/html">Text (HTML)</option>
-            <option value="text/markdown">Text (Markdown)</option>
-            <option value="text/csv">Text (CSV)</option>
+            <option value="text/plain">text/plain</option>
+            <option value="text/html">text/html</option>
+            <option value="text/markdown">text/markdown</option>
+            <option value="text/csv">text/csv</option>
           </optgroup>
           <optgroup label="JSON">
-            <option value="application/json">JSON</option>
+            <option value="application/json">application/json</option>
           </optgroup>
           <optgroup label="Image">
-            <option value="image/png">Image (PNG)</option>
-            <option value="image/jpeg">Image (JPEG)</option>
-            <option value="image/webp">Image (WebP)</option>
-            <option value="image/avif">Image (AVIF)</option>
-            <option value="image/gif">Image (GIF)</option>
+            <option value="image/png">image/png</option>
+            <option value="image/jpeg">image/jpeg</option>
+            <option value="image/webp">image/webp</option>
+            <option value="image/avif">image/avif</option>
+            <option value="image/gif">image/gif</option>
           </optgroup>
-        </select>
+          </select>
+          <br /><br />
+          <!-- For selecting a file -->
+          <div class="input-group mb-3">
+            <input type="file" class="form-control" id="selectedFile" placeholder="No file chosen.">
+          </div>
+          <br />
+          <button type="button" id="postFragmentBtn" class="btn btn-outline-secondary">Submit</button>
+          <br /><br />
+          <label for="fragLocation">Posted fragment Location</label>
+          <input id="fragLocation" type="text" readonly placeholder="Generated after POST request is made">
+        </p>
 
-        <!-- Input for Text or File -->
-        <label for="fragmentInput">Text Input:</label>
-        <input type="text" class="form-control" id="fragmentInput" placeholder="Enter text or select a file">
-        <input type="file" class="form-control" id="selectedFile">
+        <!-- For PUT requests -->
+        <h3>Update an existing fragment</h3>
+        <p>
+          <div>
+            <label for="UpdatedFragId">Enter the Id to update the fragment data</label>
+            <input type="text" class="form-control" id="UpdatedFragId" placeholder="Type fragment id here">
+          </div>
+          <br />
+          <div>
+            <label for="UpdatedFragData">Enter the updated data</label>
+            <input type="text" class="form-control" id="UpdatedFragData" placeholder="Type the updated data here">
+          </div>
+          <br />
+          <button type="button" id="updateFragmentBtn" class="btn btn-outline-secondary">Submit</button>
+        </p>
 
-        <!-- Post Button -->
-        <button type="button" id="postFragmentBtn" class="btn btn-outline-secondary">Submit</button>
+        <!-- For DELETE requests -->
+        <h3>Delete an existig fragment</h3>
+        <p>
+          <div>
+            <label for="deleteFrag">Enter the Id to delete the fragment</label>
+            <input type="text" class="form-control" id="deleteFragId" placeholder="Type fragment id here">
+          </div>
+          <br />
+          <button type="button" id="deleteFragBtn" class="btn btn-outline-secondary">Submit</button>
+        </p>
+    </section>
 
-        <!-- Display Location after POST -->
-        <label for="fragLocation">Posted Fragment Location:</label>
-        <input id="fragLocation" type="text" readonly placeholder="Generated after POST request">
-      </div>
-      
-      <!-- Display Existing Fragments -->
-      <div>
-        <h3>GET</h3>
-        <button type="button" id="getFragments">GET Fragments</button>
-        <button type="button" id="getExpandedFragments">GET Fragments Metadata</button>
-        <pre id="currentFragment"></pre>
-      </div>
-
-      <!-- View Fragment by ID -->
-      <div>
-        <h3>GET Fragment Data by ID</h3>
-        <input type="text" class="form-control" id="fragmentId" placeholder="Enter Fragment ID">
-        <button type="button" id="getFragmentIdBtn">GET Fragment Data</button>
-        <pre id="currentFragmentWithId"></pre>
-      </div>
-
-      <!-- Update an Existing Fragment -->
-      <div>
-        <h3>UPDATE</h3>
-        <label for="UpdatedFragId">Fragment ID:</label>
-        <input type="text" class="form-control" id="UpdatedFragId" placeholder="Enter Fragment ID">
-
-        <label for="UpdatedFragData">Updated Data:</label>
-        <input type="text" class="form-control" id="UpdatedFragData" placeholder="Enter Updated Data">
-        
-        <button type="button" id="updateFragmentBtn" class="btn btn-outline-secondary">Update</button>
-      </div>
-
-      <!-- Delete a Fragment -->
-      <div>
-        <h3>DELETE</h3>
-        <label for="deleteFragId">Enter Fragment ID:</label>
-        <input type="text" class="form-control" id="deleteFragId" placeholder="Enter Fragment ID">
-
-        <button type="button" id="deleteFragBtn" class="btn btn-outline-secondary">Delete</button>
-      </div>
+    <!-- This section is for authentication login/logout -->
+    <section>
+      <br />
+      <nav><button id="login">Login</button> <button id="logout">Logout</button></nav>
     </section>
   </body>
 </html>
